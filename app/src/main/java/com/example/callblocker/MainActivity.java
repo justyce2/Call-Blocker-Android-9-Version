@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -55,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
         boolean batteryIgnored = isBatteryOptimizationIgnored();
 
         if (hasPermissions) {
-            startBlockerService();
-
             String msg = "✓ Call Blocker is ACTIVE\n\nBlocking: 0700, 0201, 070806, 0209, 0723";
             if (!batteryIgnored) {
                 msg += "\n\n⚠ For reliable background blocking, also tap 'Allow Background Running' below.";
@@ -116,15 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "All permissions are required for call blocking to work", Toast.LENGTH_LONG).show();
             }
             updateStatus();
-        }
-    }
-
-    private void startBlockerService() {
-        Intent serviceIntent = new Intent(this, CallBlockerService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
         }
     }
 
