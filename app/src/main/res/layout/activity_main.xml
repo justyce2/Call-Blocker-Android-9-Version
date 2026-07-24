@@ -21,10 +21,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="⚠ Call Blocker is NOT active"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textAlignment="center"
         android:textColor="#F44336"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:padding="16dp"
         android:background="#F5F5F5"
         android:lineSpacingExtra="4dp" />
@@ -50,7 +50,19 @@
         android:textColor="#FFFFFF"
         android:background="#4CAF50"
         android:padding="16dp"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/batteryButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Allow Background Running"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="#2196F3"
+        android:padding="16dp"
+        android:layout_marginTop="12dp" />
 
     <TextView
         android:layout_width="match_parent"
