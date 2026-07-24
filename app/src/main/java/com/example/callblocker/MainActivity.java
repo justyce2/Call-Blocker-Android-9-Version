@@ -1,8 +1,14 @@
 package com.example.callblocker;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView statusText;
     private Button enableButton;
+    private Button batteryButton;
     private TextView instructionsText;
 
     @Override
@@ -28,9 +35,11 @@ public class MainActivity extends AppCompatActivity {
 
         statusText = findViewById(R.id.statusText);
         enableButton = findViewById(R.id.enableButton);
+        batteryButton = findViewById(R.id.batteryButton);
         instructionsText = findViewById(R.id.instructionsText);
 
         enableButton.setOnClickListener(v -> requestPermissions());
+        batteryButton.setOnClickListener(v -> requestIgnoreBatteryOptimizations());
 
         updateStatus();
     }
@@ -42,8 +51,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateStatus() {
-        if (checkPermissions()) {
-            statusText.setText("✓ Call Blocker is ACTIVE\n\nAll calls starting with:\n0700, 0201, 070806, 0209, 0723\nwill be blocked automatically.");
+        boolean hasPermissions = checkPermissions();
+        boolean batteryIgnored = isBatteryOptimizationIgnored();
+
+        if (hasPermissions) {
+            startBlockerService();
+
+            String msg = "✓ Call Blocker is ACTIVE\n\nBlocking: 0700, 0201, 070806, 0209, 0723";
+            if (!batteryIgnored) {
+                msg += "\n\n⚠ For reliable background blocking, also tap 'Allow Background Running' below.";
+            }
+            statusText.setText(msg);
             statusText.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
             enableButton.setVisibility(View.GONE);
             instructionsText.setVisibility(View.GONE);
@@ -54,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
             instructionsText.setVisibility(View.VISIBLE);
             instructionsText.setText("To activate call blocking, tap the button below and allow all permissions.");
         }
+
+        batteryButton.setVisibility(batteryIgnored ? View.GONE : View.VISIBLE);
     }
 
     private boolean checkPermissions() {
@@ -96,6 +116,30 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "All permissions are required for call blocking to work", Toast.LENGTH_LONG).show();
             }
             updateStatus();
+        }
+    }
+
+    private void startBlockerService() {
+        Intent serviceIntent = new Intent(this, CallBlockerService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    private boolean isBatteryOptimizationIgnored() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        return pm != null && pm.isIgnoringBatteryOptimizations(getPackageName());
+    }
+
+    private void requestIgnoreBatteryOptimizations() {
+        try {
+            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Please disable battery optimization manually in Settings", Toast.LENGTH_LONG).show();
         }
     }
 }
